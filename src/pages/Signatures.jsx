@@ -1,16 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import {
-  AlertCircle,
-  CheckCircle2,
-  Copy,
-  Loader2,
-  Mail,
-  MessageCircle,
-  Plus,
-  Send,
-  Trash2
-} from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { AlertCircle, CheckCircle2, Copy, Loader2, Mail, MessageCircle, Plus, Send, Trash2 } from 'lucide-react';
 
 import { api } from '../lib/api';
 import { Badge } from '../components/ui/Badge';
@@ -33,6 +23,23 @@ function emptySigner() {
   };
 }
 
+function canSendToSignature(contract) {
+  const status = contract.currentStatus || contract.status;
+  const hasSignatureRequests =
+    Array.isArray(contract.signatureRequests) &&
+    contract.signatureRequests.length > 0;
+
+  return (
+    !hasSignatureRequests &&
+    status !== 'WAITING_SIGNATURE' &&
+    status !== 'SIGNED' &&
+    status !== 'EXPIRED' &&
+    status !== 'CANCELED' &&
+    status !== 'CLOSED' &&
+    !contract.archivedAt
+  );
+}
+
 export default function Signatures() {
   const [searchParams] = useSearchParams();
   const initialContractId = searchParams.get('contractId') || '';
@@ -53,31 +60,22 @@ export default function Signatures() {
   async function loadContracts() {
     try {
       setLoadingContracts(true);
+      setError('');
 
       const response = await api.get('/contracts');
-
       const contractsData = Array.isArray(response.data) ? response.data : [];
-
-      const contractsWithoutSignatureSend = contractsData.filter((contract) => {
-        const hasSignatureRequests =
-          Array.isArray(contract.signatureRequests) &&
-          contract.signatureRequests.length > 0;
-
-        const isAlreadySent = contract.status === 'WAITING_SIGNATURE';
-        const isSigned = contract.status === 'SIGNED' || contract.archivedAt;
-        const isCanceled = contract.status === 'CANCELED';
-        const isExpired = contract.status === 'EXPIRED';
-
-        return (
-          !hasSignatureRequests &&
-          !isAlreadySent &&
-          !isSigned &&
-          !isCanceled &&
-          !isExpired
-        );
-      });
+      const contractsWithoutSignatureSend = contractsData.filter(canSendToSignature);
 
       setContracts(contractsWithoutSignatureSend);
+
+      if (initialContractId) {
+        const exists = contractsWithoutSignatureSend.some((contract) => contract.id === initialContractId);
+
+        if (!exists) {
+          setContractId('');
+          setError('Este contrato não está disponível para envio. Ele pode já ter sido enviado, assinado, expirado ou cancelado.');
+        }
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Não foi possível carregar os contratos.');
     } finally {
@@ -107,22 +105,6 @@ export default function Signatures() {
       if (state.length === 1) return state;
       return state.filter((_, signerIndex) => signerIndex !== index);
     });
-  }
-
-  function resetForm() {
-    setContractId('');
-    setChannel('EMAIL');
-    setSigners([emptySigner()]);
-    setError('');
-    setResultPanel(null);
-  }
-
-  async function copyText(text) {
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch (err) {
-      setError('Não foi possível copiar o link.');
-    }
   }
 
   function validateForm() {
@@ -172,23 +154,34 @@ export default function Signatures() {
 
       setResultPanel({
         type: 'success',
-        title: 'Contrato enviado para assinatura',
-        message: response.data?.message || 'O contrato foi enviado para os assinantes informados.',
+        title: 'Envio realizado',
+        message: response.data?.message || 'Contrato enviado para assinatura.',
         data: response.data
       });
+
+      await loadContracts();
     } catch (err) {
       setResultPanel({
         type: 'error',
-        title: 'Falha ao enviar assinatura',
-        message: err.response?.data?.message || 'Não foi possível enviar o contrato para assinatura.',
-        data: err.response?.data || null
+        title: 'Erro no envio',
+        message: err.response?.data?.message || 'Não foi possível enviar para assinatura.'
       });
     } finally {
       setSending(false);
     }
   }
 
-  const showResultPanel = Boolean(resultPanel);
+  function resetForm() {
+    setResultPanel(null);
+    setError('');
+    setContractId('');
+    setChannel('EMAIL');
+    setSigners([emptySigner()]);
+  }
+
+  async function copyLink(link) {
+    await navigator.clipboard.writeText(link);
+  }
 
   return (
     <div className="space-y-6">
@@ -201,7 +194,7 @@ export default function Signatures() {
           </h1>
 
           <p className="mt-1 text-sm text-zinc-500">
-            Envie o link de assinatura para um ou vários assinantes por e-mail, WhatsApp ou ambos.
+            Aqui aparecem somente contratos que ainda não foram enviados para assinatura.
           </p>
         </div>
 
@@ -211,14 +204,14 @@ export default function Signatures() {
         </div>
       </div>
 
-      {showResultPanel ? (
-        <Card className="mx-auto max-w-3xl">
-          <div className="text-center">
+      {resultPanel ? (
+        <Card>
+          <div className="flex flex-col items-center py-8 text-center">
             <div
               className={
                 resultPanel.type === 'success'
-                  ? 'mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600'
-                  : 'mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-600'
+                  ? 'mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700'
+                  : 'mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-600'
               }
             >
               {resultPanel.type === 'success' ? (
@@ -228,61 +221,33 @@ export default function Signatures() {
               )}
             </div>
 
-            <Badge variant={resultPanel.type === 'success' ? 'success' : 'danger'}>
-              {resultPanel.type === 'success' ? 'Envio concluído' : 'Envio não realizado'}
-            </Badge>
-
-            <h2 className="mt-3 text-xl font-semibold tracking-tight text-zinc-950">
+            <h2 className="text-xl font-semibold tracking-tight text-zinc-950">
               {resultPanel.title}
             </h2>
 
-            <p className="mt-2 text-sm text-zinc-500">
+            <p className="mt-2 max-w-xl text-sm text-zinc-500">
               {resultPanel.message}
             </p>
-          </div>
 
-          {resultPanel.type === 'success' && resultPanel.data?.signatureRequests?.length > 0 && (
-            <div className="mt-6 rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
-              <div className="mb-4 flex items-center justify-between gap-3">
-                <div>
-                  <h3 className="text-sm font-semibold text-zinc-950">
-                    Links gerados
-                  </h3>
-
-                  <p className="mt-1 text-xs text-zinc-500">
-                    Cada assinante recebeu um link individual de assinatura.
-                  </p>
-                </div>
-
-                <Badge>{resultPanel.data.signatureRequests.length} assinante(s)</Badge>
-              </div>
-
-              <div className="space-y-3">
+            {resultPanel.type === 'success' && resultPanel.data?.signatureRequests?.length > 0 && (
+              <div className="mt-6 w-full max-w-2xl space-y-3 text-left">
                 {resultPanel.data.signatureRequests.map((request) => (
-                  <div key={request.id} className="rounded-xl border border-zinc-200 bg-white p-3">
+                  <div key={request.id} className="rounded-2xl border border-zinc-100 bg-zinc-50/80 p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-zinc-900">
+                        <p className="text-sm font-semibold text-zinc-950">
                           {request.signerName}
                         </p>
 
-                        <p className="mt-1 text-xs text-zinc-500">
-                          {request.signerEmail || request.signerPhone || 'Contato não informado'}
+                        <p className="mt-1 break-all text-xs text-zinc-500">
+                          {request.signatureUrl}
                         </p>
                       </div>
 
-                      <Badge variant="success">Enviado</Badge>
-                    </div>
-
-                    <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
-                      <p className="min-w-0 flex-1 break-all rounded-lg bg-zinc-50 px-3 py-2 text-xs text-zinc-500">
-                        {request.signatureUrl}
-                      </p>
-
                       <button
                         type="button"
-                        onClick={() => copyText(request.signatureUrl)}
-                        className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50"
+                        onClick={() => copyLink(request.signatureUrl)}
+                        className="inline-flex h-9 shrink-0 items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 text-xs font-medium text-zinc-800 transition hover:bg-zinc-50"
                       >
                         <Copy size={14} strokeWidth={1.8} />
                         Copiar
@@ -291,32 +256,11 @@ export default function Signatures() {
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-
-          {resultPanel.type === 'error' && (
-            <div className="mt-6 rounded-2xl border border-red-100 bg-red-50/70 p-4 text-sm text-red-700">
-              Revise os dados do contrato, os assinantes e as configurações de envio. Depois tente novamente.
-            </div>
-          )}
-
-          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-            {resultPanel.type === 'error' && (
-              <Button type="button" variant="secondary" onClick={() => setResultPanel(null)}>
-                Voltar e corrigir
-              </Button>
             )}
 
-            <Button type="button" onClick={resetForm} className="!text-white">
-              Enviar outro contrato
+            <Button type="button" onClick={resetForm} className="mt-6 !text-white">
+              Novo envio
             </Button>
-
-            <Link
-              to="/contracts"
-              className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
-            >
-              Ver contratos
-            </Link>
           </div>
         </Card>
       ) : (
@@ -331,7 +275,7 @@ export default function Signatures() {
                   disabled={loadingContracts}
                 >
                   <option value="">
-                    {loadingContracts ? 'Carregando contratos...' : 'Selecione um contrato'}
+                    {loadingContracts ? 'Carregando contratos...' : 'Selecione um contrato sem envio de assinatura'}
                   </option>
 
                   {contracts.map((contract) => (
@@ -351,6 +295,12 @@ export default function Signatures() {
                   <option value="BOTH">E-mail e WhatsApp</option>
                 </Select>
               </div>
+
+              {!loadingContracts && contracts.length === 0 && (
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                  Nenhum contrato disponível para envio. Crie um contrato novo ou verifique se os contratos existentes já foram enviados, assinados, expirados ou cancelados.
+                </div>
+              )}
 
               <div className="rounded-2xl border border-zinc-100 bg-zinc-50/70 p-4">
                 <div className="mb-4 flex items-center justify-between gap-3">
@@ -423,7 +373,7 @@ export default function Signatures() {
               )}
 
               <div className="flex justify-end">
-                <Button type="submit" disabled={sending} className="!text-white">
+                <Button type="submit" disabled={sending || contracts.length === 0} className="!text-white">
                   {sending ? (
                     <>
                       <Loader2 className="animate-spin" size={16} strokeWidth={1.8} />
@@ -440,44 +390,42 @@ export default function Signatures() {
             </form>
           </Card>
 
-          <div className="space-y-4">
-            <Card>
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-700">
-                {channel === 'WHATSAPP' ? (
-                  <MessageCircle size={18} strokeWidth={1.8} />
-                ) : (
-                  <Mail size={18} strokeWidth={1.8} />
-                )}
+          <Card>
+            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-zinc-700">
+              {channel === 'WHATSAPP' ? (
+                <MessageCircle size={18} strokeWidth={1.8} />
+              ) : (
+                <Mail size={18} strokeWidth={1.8} />
+              )}
+            </div>
+
+            <h2 className="text-base font-semibold text-zinc-950">
+              Resumo do envio
+            </h2>
+
+            <div className="mt-4 space-y-3 text-sm">
+              <div>
+                <p className="text-xs text-zinc-400">Contrato</p>
+                <p className="font-medium text-zinc-800">
+                  {selectedContract?.title || 'Nenhum contrato selecionado'}
+                </p>
               </div>
 
-              <h2 className="text-base font-semibold text-zinc-950">
-                Resumo do envio
-              </h2>
-
-              <div className="mt-4 space-y-3 text-sm">
-                <div>
-                  <p className="text-xs text-zinc-400">Contrato</p>
-                  <p className="font-medium text-zinc-800">
-                    {selectedContract?.title || 'Nenhum contrato selecionado'}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-xs text-zinc-400">Canal</p>
-                  <p className="font-medium text-zinc-800">
-                    {channelLabels[channel]}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-xs text-zinc-400">Total de assinantes</p>
-                  <p className="font-medium text-zinc-800">
-                    {signers.length}
-                  </p>
-                </div>
+              <div>
+                <p className="text-xs text-zinc-400">Canal</p>
+                <p className="font-medium text-zinc-800">
+                  {channelLabels[channel]}
+                </p>
               </div>
-            </Card>
-          </div>
+
+              <div>
+                <p className="text-xs text-zinc-400">Total de assinantes</p>
+                <p className="font-medium text-zinc-800">
+                  {signers.length}
+                </p>
+              </div>
+            </div>
+          </Card>
         </div>
       )}
     </div>

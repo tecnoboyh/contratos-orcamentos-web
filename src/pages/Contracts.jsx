@@ -12,10 +12,11 @@ import { Select } from '../components/ui/Select';
 const statusLabels = {
   DRAFT: 'Rascunho',
   WAITING_SIGNATURE: 'Aguardando assinatura',
-  SIGNED: 'Arquivado',
+  SIGNED: 'Assinado',
   ACTIVE: 'Ativo',
   EXPIRING: 'Vencendo',
-  EXPIRED: 'Encerrado',
+  CLOSED: 'Encerrado',
+  EXPIRED: 'Expirado',
   CANCELED: 'Cancelado'
 };
 
@@ -27,10 +28,34 @@ const typeLabels = {
   OTHER: 'Outro'
 };
 
+function getContractStatus(contract) {
+  if (contract.archivedAt || contract.status === 'SIGNED') {
+    return 'SIGNED';
+  }
+
+  return contract.currentStatus || contract.status;
+}
+
+function canSendToSignature(contract) {
+  const status = getContractStatus(contract);
+  const hasSignatureRequests =
+    Array.isArray(contract.signatureRequests) &&
+    contract.signatureRequests.length > 0;
+
+  return (
+    !hasSignatureRequests &&
+    status !== 'WAITING_SIGNATURE' &&
+    status !== 'SIGNED' &&
+    status !== 'EXPIRED' &&
+    status !== 'CANCELED' &&
+    status !== 'CLOSED'
+  );
+}
+
 function statusVariant(status) {
   if (status === 'SIGNED' || status === 'ACTIVE') return 'success';
   if (status === 'WAITING_SIGNATURE' || status === 'EXPIRING') return 'warning';
-  if (status === 'EXPIRED' || status === 'CANCELED') return 'danger';
+  if (status === 'EXPIRED' || status === 'CANCELED' || status === 'CLOSED') return 'danger';
   return 'default';
 }
 
@@ -117,7 +142,7 @@ export default function Contracts() {
 
         <Link
           to="/contracts/new"
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-zinc-950 px-4 text-sm font-medium !text-white shadow-sm transition hover:bg-zinc-800"
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-zinc-950 px-4 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800"
         >
           <Plus size={17} strokeWidth={1.8} />
           Novo contrato
@@ -183,7 +208,7 @@ export default function Contracts() {
 
             <Link
               to="/contracts/new"
-              className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-zinc-950 px-4 text-sm font-medium !text-white shadow-sm transition hover:bg-zinc-800"
+              className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-zinc-950 px-4 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800"
             >
               <Plus size={17} strokeWidth={1.8} />
               Criar contrato
@@ -193,7 +218,7 @@ export default function Contracts() {
       ) : (
         <div className="grid gap-4">
           {contracts.map((contract) => {
-            const currentStatus = contract.currentStatus || contract.status;
+            const currentStatus = getContractStatus(contract);
 
             return (
               <Card key={contract.id} className="p-4">
@@ -231,7 +256,7 @@ export default function Contracts() {
                   </div>
 
                   <div className="flex items-center justify-end gap-2">
-                    {statusLabels === 'WAITING_SIGNATURE' && (
+                    {canSendToSignature(contract) && (
                       <Link
                         to={`/signatures?contractId=${contract.id}`}
                         className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-zinc-950 px-3 text-sm font-medium !text-white shadow-sm transition hover:bg-zinc-800"

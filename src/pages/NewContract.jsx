@@ -227,7 +227,7 @@ export default function NewContract() {
             Cancelar
           </Link>
 
-          <Button disabled={loading}>
+          <Button disabled={loading} className="!text-white">
             <Save size={17} strokeWidth={1.8} />
             {loading ? 'Salvando...' : 'Salvar contrato'}
           </Button>

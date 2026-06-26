@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Archive, CheckCircle2, FileText, Loader2, PenLine } from 'lucide-react';
+import { CheckCircle2, FileText, Loader2, PenLine } from 'lucide-react';
 
 import { api } from '../lib/api';
-import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { Badge } from '../components/ui/Badge';
 
 export default function SignatureView() {
   const { id } = useParams();
@@ -14,7 +14,7 @@ export default function SignatureView() {
   const [loading, setLoading] = useState(true);
   const [signing, setSigning] = useState(false);
   const [error, setError] = useState('');
-  const [successPanel, setSuccessPanel] = useState(null);
+  const [result, setResult] = useState(null);
 
   async function loadSignature() {
     try {
@@ -22,7 +22,6 @@ export default function SignatureView() {
       setError('');
 
       const response = await api.get(`/signatures/${id}/view`);
-
       setSignature(response.data);
     } catch (err) {
       setError(err.response?.data?.message || 'Não foi possível carregar o contrato.');
@@ -35,19 +34,17 @@ export default function SignatureView() {
     try {
       setSigning(true);
       setError('');
-      setSuccessPanel(null);
+      setResult(null);
 
       const response = await api.post(`/signatures/${id}/sign`);
-
-      setSuccessPanel({
-        message: response.data?.message || 'Assinatura registrada com sucesso.',
-        contractStatus: response.data?.contractStatus,
-        contractArchived: Boolean(response.data?.contractArchived)
-      });
+      setResult({ type: 'success', ...response.data });
 
       await loadSignature();
     } catch (err) {
-      setError(err.response?.data?.message || 'Não foi possível assinar o contrato.');
+      setResult({
+        type: 'error',
+        message: err.response?.data?.message || 'Não foi possível assinar o contrato.'
+      });
     } finally {
       setSigning(false);
     }
@@ -90,7 +87,7 @@ export default function SignatureView() {
 
   const contract = signature?.contract;
   const alreadySigned = signature?.status === 'SIGNED';
-  const contractArchived = contract?.status === 'SIGNED' || Boolean(contract?.archivedAt);
+  const archived = Boolean(contract?.archivedAt || result?.contractArchived);
 
   return (
     <div className="min-h-screen px-4 py-8">
@@ -101,7 +98,7 @@ export default function SignatureView() {
           </div>
 
           <Badge variant={alreadySigned ? 'success' : 'dark'}>
-            {contractArchived ? 'Contrato assinado e arquivado' : alreadySigned ? 'Contrato assinado' : 'Assinatura pendente'}
+            {alreadySigned ? 'Contrato assinado' : 'Assinatura pendente'}
           </Badge>
 
           <h1 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-950">
@@ -113,38 +110,6 @@ export default function SignatureView() {
           </p>
         </div>
 
-        {successPanel && (
-          <Card className="border-emerald-100 bg-emerald-50/80">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
-                {successPanel.contractArchived ? (
-                  <Archive size={20} strokeWidth={1.8} />
-                ) : (
-                  <CheckCircle2 size={20} strokeWidth={1.8} />
-                )}
-              </div>
-
-              <div>
-                <h2 className="text-base font-semibold text-emerald-950">
-                  {successPanel.contractArchived
-                    ? 'Contrato assinado e arquivado'
-                    : 'Assinatura registrada'}
-                </h2>
-
-                <p className="mt-1 text-sm leading-6 text-emerald-800">
-                  {successPanel.message}
-                </p>
-
-                {successPanel.contractArchived && (
-                  <p className="mt-2 text-sm leading-6 text-emerald-800">
-                    Todas as assinaturas foram concluídas. O contrato agora fica disponível no fluxo interno de contratos assinados.
-                  </p>
-                )}
-              </div>
-            </div>
-          </Card>
-        )}
-
         <Card>
           <div className="mb-5 grid gap-4 border-b border-zinc-100 pb-5 sm:grid-cols-3">
             <div>
@@ -152,7 +117,7 @@ export default function SignatureView() {
                 Assinante
               </p>
               <p className="mt-1 text-sm font-medium text-zinc-900">
-                {signature?.signerName || '-'}
+                {signature?.signerName}
               </p>
             </div>
 
@@ -185,9 +150,28 @@ export default function SignatureView() {
             </div>
           </div>
 
-          {error && (
-            <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
-              {error}
+          {result && (
+            <div
+              className={
+                result.type === 'success'
+                  ? 'mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700'
+                  : 'mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600'
+              }
+            >
+              <div className="flex items-start gap-2">
+                {result.type === 'success' && <CheckCircle2 size={17} strokeWidth={1.8} />}
+                <div>
+                  <p className="font-medium">
+                    {result.message}
+                  </p>
+
+                  {archived && (
+                    <p className="mt-1 text-xs">
+                      O contrato foi arquivado e ficará disponível no Gerenciador quando essa tela for criada.
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 
@@ -202,7 +186,11 @@ export default function SignatureView() {
               disabled={signing || alreadySigned}
               className="!text-white"
             >
-              {alreadySigned ? 'Contrato já assinado' : signing ? 'Assinando...' : 'Assinar contrato'}
+              {alreadySigned
+                ? 'Contrato já assinado'
+                : signing
+                  ? 'Assinando...'
+                  : 'Assinar contrato'}
             </Button>
           </div>
         </Card>
