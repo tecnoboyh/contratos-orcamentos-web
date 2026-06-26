@@ -10,6 +10,7 @@ import Contracts from './pages/Contracts';
 import NewContract from './pages/NewContract';
 import Obras from './pages/Obras';
 import Signatures from './pages/Signatures';
+import SignatureView from './pages/SignatureView';
 
 function PublicRoute({ children }) {
   const { token } = useAuthStore();
@@ -26,6 +27,7 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+      <Route path="/signatures/:id/view" element={<SignatureView />} />
 
       <Route element={<AppLayout />}>
         <Route path="/" element={<Dashboard />} />

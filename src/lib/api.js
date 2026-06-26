@@ -13,6 +13,10 @@ api.interceptors.request.use((config) => {
     if (parsedAuth?.token) {
       config.headers.Authorization = `Bearer ${parsedAuth.token}`;
     }
+
+    if (parsedAuth?.company?.id) {
+      config.headers['x-company-id'] = parsedAuth.company.id;
+    }
   }
 
   return config;

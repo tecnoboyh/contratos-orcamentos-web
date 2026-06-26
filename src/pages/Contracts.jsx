@@ -12,11 +12,10 @@ import { Select } from '../components/ui/Select';
 const statusLabels = {
   DRAFT: 'Rascunho',
   WAITING_SIGNATURE: 'Aguardando assinatura',
-  SIGNED: 'Assinado',
+  SIGNED: 'Arquivado',
   ACTIVE: 'Ativo',
   EXPIRING: 'Vencendo',
-  CLOSED: 'Encerrado',
-  EXPIRED: 'Expirado',
+  EXPIRED: 'Encerrado',
   CANCELED: 'Cancelado'
 };
 
@@ -118,7 +117,7 @@ export default function Contracts() {
 
         <Link
           to="/contracts/new"
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-zinc-950 px-4 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800"
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-zinc-950 px-4 text-sm font-medium !text-white shadow-sm transition hover:bg-zinc-800"
         >
           <Plus size={17} strokeWidth={1.8} />
           Novo contrato
@@ -184,7 +183,7 @@ export default function Contracts() {
 
             <Link
               to="/contracts/new"
-              className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-zinc-950 px-4 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800"
+              className="mt-5 inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-zinc-950 px-4 text-sm font-medium !text-white shadow-sm transition hover:bg-zinc-800"
             >
               <Plus size={17} strokeWidth={1.8} />
               Criar contrato
@@ -232,13 +231,15 @@ export default function Contracts() {
                   </div>
 
                   <div className="flex items-center justify-end gap-2">
-                    <Link
-                      to={`/signatures?contractId=${contract.id}`}
-                      className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50"
-                    >
-                      <Send size={16} strokeWidth={1.8} />
-                      Assinar
-                    </Link>
+                    {statusLabels === 'WAITING_SIGNATURE' && (
+                      <Link
+                        to={`/signatures?contractId=${contract.id}`}
+                        className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-zinc-950 px-3 text-sm font-medium !text-white shadow-sm transition hover:bg-zinc-800"
+                      >
+                        <Send size={16} strokeWidth={1.8} />
+                        Enviar para assinatura
+                      </Link>
+                    )}
 
                     <Link
                       to={`/obras?contractId=${contract.id}`}
