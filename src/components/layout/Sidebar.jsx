@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { Building2, FileText, LayoutDashboard, PenLine, Settings, ShoppingCart } from 'lucide-react';
 import clsx from 'clsx';
+import { CompanySwitcher } from './CompanySwitcher';
 
 const menu = [
   { label: 'Dashboard', path: '/', icon: LayoutDashboard },
@@ -14,7 +15,7 @@ const menu = [
 export function Sidebar() {
   return (
     <aside className="hidden w-64 shrink-0 border-r border-zinc-200/70 bg-white/60 px-4 py-5 backdrop-blur-xl lg:block">
-      <div className="mb-8 px-2">
+      <div className="mb-4 px-2">
         <div className="flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-950 text-sm font-semibold text-white">
             C
@@ -25,6 +26,10 @@ export function Sidebar() {
             <span className="text-xs text-zinc-500">Gestão orçamentária</span>
           </div>
         </div>
+      </div>
+
+      <div className="mb-6">
+        <CompanySwitcher />
       </div>
 
       <nav className="space-y-1">
