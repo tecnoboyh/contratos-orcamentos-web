@@ -583,7 +583,7 @@ export default function Obras() {
                           <button
                             type="button"
                             onClick={() => handleCompleteStep(step.id)}
-                            className="inline-flex h-8 shrink-0 items-center gap-1 rounded-xl bg-zinc-950 px-3 text-xs font-medium text-white transition hover:bg-zinc-800"
+                            className="inline-flex h-8 shrink-0 items-center gap-1 rounded-lg bg-zinc-950 px-3 text-xs font-medium text-white transition hover:bg-zinc-800"
                           >
                             <CheckCircle2 size={14} strokeWidth={1.8} />
                             Concluir
@@ -838,7 +838,7 @@ export default function Obras() {
               <button
                 type="button"
                 onClick={() => setModalOpen(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-xl text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-950"
+                className="flex h-8 w-8 items-center justify-center rounded-xl text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-950"
               >
                 <X size={18} strokeWidth={1.8} />
               </button>

@@ -14,10 +14,10 @@ const menu = [
 
 export function Sidebar() {
   return (
-    <aside className="hidden w-64 shrink-0 border-r border-zinc-200/70 bg-white/60 px-4 py-5 backdrop-blur-xl lg:block">
+    <aside className="hidden h-screen w-64 shrink-0 overflow-hidden border-r border-zinc-200/70 bg-white/60 px-4 py-5 backdrop-blur-xl lg:block">
       <div className="mb-4 px-2">
         <div className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-950 text-sm font-semibold text-white">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-zinc-950 text-sm font-semibold text-white">
             C
           </div>
 
@@ -42,7 +42,7 @@ export function Sidebar() {
               to={item.path}
               className={({ isActive }) =>
                 clsx(
-                  'flex h-10 items-center gap-3 rounded-xl px-3 text-sm font-medium transition',
+                  'flex h-9 items-center gap-2.5 rounded-lg px-3 text-xs font-medium transition',
                   isActive
                     ? 'bg-zinc-950 !text-white shadow-sm'
                     : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950'

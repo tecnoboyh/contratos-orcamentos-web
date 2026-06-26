@@ -101,7 +101,7 @@ export default function NewContract() {
 
         <Link
           to="/contracts"
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50"
+          className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 text-xs font-medium text-zinc-800 transition hover:bg-zinc-50"
         >
           <ArrowLeft size={17} strokeWidth={1.8} />
           Voltar
@@ -222,7 +222,7 @@ export default function NewContract() {
         <div className="flex justify-end gap-2">
           <Link
             to="/contracts"
-            className="inline-flex h-10 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 text-sm font-medium text-zinc-800 transition hover:bg-zinc-50"
+            className="inline-flex h-8 items-center justify-center rounded-lg border border-zinc-200 bg-white px-3 text-xs font-medium text-zinc-800 transition hover:bg-zinc-50"
           >
             Cancelar
           </Link>

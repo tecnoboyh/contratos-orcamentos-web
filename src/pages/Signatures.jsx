@@ -247,7 +247,7 @@ export default function Signatures() {
                       <button
                         type="button"
                         onClick={() => copyLink(request.signatureUrl)}
-                        className="inline-flex h-9 shrink-0 items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 text-xs font-medium text-zinc-800 transition hover:bg-zinc-50"
+                        className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 text-xs font-medium text-zinc-800 transition hover:bg-zinc-50"
                       >
                         <Copy size={14} strokeWidth={1.8} />
                         Copiar

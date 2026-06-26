@@ -132,7 +132,7 @@ export function CompanySwitcher() {
                 setModalOpen(true);
                 setOpen(false);
               }}
-              className="flex h-10 w-full items-center gap-2 rounded-xl px-3 text-sm font-medium text-zinc-800 transition hover:bg-zinc-100"
+              className="flex h-10 w-full items-center gap-2 rounded-xl px-2.5 text-xs font-medium text-zinc-800 transition hover:bg-zinc-100"
             >
               <Plus size={16} strokeWidth={1.8} />
               Adicionar empresa
@@ -153,7 +153,7 @@ export function CompanySwitcher() {
               <button
                 type="button"
                 onClick={() => setModalOpen(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-xl text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-950"
+                className="flex h-8 w-8 items-center justify-center rounded-xl text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-950"
               >
                 <X size={18} strokeWidth={1.8} />
               </button>

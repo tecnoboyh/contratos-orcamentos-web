@@ -10,7 +10,7 @@ export function Button({ children, variant = 'primary', className, ...props }) {
   return (
     <button
       className={clsx(
-        'inline-flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60',
+        'inline-flex h-8 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-60',
         'focus:outline-none focus:ring-2 focus:ring-zinc-900/10',
         variants[variant],
         className

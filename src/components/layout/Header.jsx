@@ -6,7 +6,7 @@ export function Header() {
   const { user, company, signOut } = useAuthStore();
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-zinc-200/70 bg-white/50 px-5 backdrop-blur-xl">
+    <header className="flex h-16 shrink-0 items-center justify-between border-b border-zinc-200/70 bg-white/50 px-5 backdrop-blur-xl">
       <div className="hidden h-10 w-full max-w-md items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 text-sm text-zinc-400 md:flex">
         <Search size={17} strokeWidth={1.8} />
         Buscar contratos, obras ou fornecedores
