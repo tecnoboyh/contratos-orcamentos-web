@@ -12,6 +12,8 @@ import Obras from './pages/Obras';
 import Signatures from './pages/Signatures';
 import SignatureView from './pages/SignatureView';
 import PurchaseOrders from './pages/PurchaseOrders';
+import Reports from './pages/Reports';
+import ReportObraView from './pages/ReportObraView';
 
 function PublicRoute({ children }) {
   const { token } = useAuthStore();
@@ -29,6 +31,7 @@ export default function App() {
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
       <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
       <Route path="/signatures/:id/view" element={<SignatureView />} />
+      <Route path="/reports/obras/:id/view" element={<ReportObraView />} />
 
       <Route element={<AppLayout />}>
         <Route path="/" element={<Dashboard />} />
@@ -37,6 +40,7 @@ export default function App() {
         <Route path="/signatures" element={<Signatures />} />
         <Route path="/obras" element={<Obras />} />
         <Route path="/purchase-orders" element={<PurchaseOrders />} />
+        <Route path="/reports" element={<Reports />} />
       </Route>
     </Routes>
   );

@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Building2, FileText, LayoutDashboard, PenLine, Settings, ShoppingCart } from 'lucide-react';
+import { Building2, FileBarChart, FileText, LayoutDashboard, PenLine, Settings, ShoppingCart } from 'lucide-react';
 import clsx from 'clsx';
 import { CompanySwitcher } from './CompanySwitcher';
 
@@ -9,6 +9,7 @@ const menu = [
   { label: 'Assinaturas', path: '/signatures', icon: PenLine },
   { label: 'Obras', path: '/obras', icon: Building2 },
   { label: 'Ordens de compra', path: '/purchase-orders', icon: ShoppingCart },
+  { label: 'Relatórios', path: '/reports', icon: FileBarChart },
   { label: 'Configurações', path: '/settings', icon: Settings }
 ];
 
